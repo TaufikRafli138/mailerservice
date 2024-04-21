@@ -1,0 +1,34 @@
+image: node:latest
+
+pipelines:
+  tags:
+    "*":
+      - step:
+          script:
+            - echo "Building Docker image"
+            - docker build
+              --build-arg APP_KEY=$APP_KEY
+              --build-arg APP_URL=$APP_URL
+              --build-arg DB_CONNECTION=$DB_CONNECTION
+              --build-arg DB_HOST=$DB_HOST
+              --build-arg DB_PORT=$DB_PORT
+              --build-arg DB_DATABASE=$DB_DATABASE
+              --build-arg DB_USERNAME=$DB_USERNAME
+              --build-arg DB_PASSWORD=$DB_PASSWORD
+              --build-arg DB_SCHEMA=$DB_SCHEMA
+              --build-arg PUSHER_APP_KEY=$PUSHER_APP_KEY
+              --build-arg PUSHER_APP_ID=$PUSHER_APP_ID
+              --build-arg PUSHER_APP_SECRET=$PUSHER_APP_SECRET
+              --build-arg PUSHER_APP_CLUSTER=$PUSHER_APP_CLUSTER
+              -t hei-citi-services:$BITBUCKET_TAG .
+            - echo "Logging in to Docker Hub"
+            - docker login qgregistry.azurecr.io -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            - echo "List Docker image"
+            - docker images
+            - echo "Pushing Docker image"
+            - docker tag hei-citi-services:$BITBUCKET_TAG qgregistry.azurecr.io/hcis/hei-citi/hei-citi-services:$BITBUCKET_TAG
+            - docker push qgregistry.azurecr.io/hcis/hei-citi/hei-citi-services:$BITBUCKET_TAG
+          services:
+            - docker
+        ##  - echo "Deploying to server"
+        ##  - ssh user@your-server-ip "docker pull bimogempar/hei-citi-services:$BITBUCKET_TAG && docker run -d -p 80:80 --name my-laravel-container bimogempar/hei-citi-services:$BITBUCKET_TAG"
